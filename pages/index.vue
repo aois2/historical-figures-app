@@ -1,6 +1,7 @@
 <template>
   <v-container>
     <h1>歴史上の人物</h1>
+    <NuxtLink :to="'/vote'">投票する</NuxtLink>
     <v-row>
       <v-col
         v-for="(figures, mbti) in categorizedFigures"
@@ -21,13 +22,20 @@
 <script lang="ts" setup>
 import { useFetch } from "#imports";
 import FigureCard from "~/components/FigureCard.vue";
+import useFiguresData from "~/composables/useFiguresData";
 import type { Figure } from "~/types";
 
-const { data: figures } = await useFetch<Figure[]>("/api/figures");
+const { figuresData, setFiguresData } = useFiguresData();
+
+const { data, error } = await useFetch<Figure[]>("/api/figures");
+
+if (data.value) {
+  setFiguresData(data.value);
+}
 
 // Categorizing figures by MBTI type
 const categorizedFigures = computed(() => {
-  return figures.value.reduce(
+  return figuresData.value.reduce(
     (acc, figure) => {
       if (!acc[figure.mbti_type]) {
         acc[figure.mbti_type] = [];

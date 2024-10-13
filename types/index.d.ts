@@ -12,4 +12,25 @@ export type Figure = {
   region: string;
   region_jp: string;
   image_url: string;
+  votes: number;
+  mbti_votes: MBTIs[];
+};
+
+type MBTIs = {
+  INTJ: number;
+  INTP: number;
+  ENTJ: number;
+  ENTP: number;
+  INFJ: number;
+  INFP: number;
+  ENFJ: number;
+  ENFP: number;
+  ISTJ: number;
+  ISFJ: number;
+  ESTJ: number;
+  ESFJ: number;
+  ISTP: number;
+  ISFP: number;
+  ESTP: number;
+  ESFP: number;
 };

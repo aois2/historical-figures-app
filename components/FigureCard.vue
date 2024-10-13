@@ -3,6 +3,7 @@
     <v-img :src="figure.image_url" height="200px" />
     <v-card-title>{{ figure.name_jp }}</v-card-title>
     <v-card-subtitle>{{ figure.mbti_type }}</v-card-subtitle>
+    <v-card-text>{{ figure.biography_jp }}</v-card-text>
     <v-card-actions>
       <NuxtLink :to="`/figures/${figure._id}`">Learn More</NuxtLink>
     </v-card-actions>
