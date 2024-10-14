@@ -8,7 +8,7 @@ async function connectToDatabase(): Promise<Db> {
     const mongoUri = process.env.MONGODB_URI as string;
     client = new MongoClient(mongoUri);
     await client.connect();
-    db = client.db("historical_figures_db");
+    db = client.db(process.env.DB_NAME);
   }
   return db as Db;
 }
@@ -16,7 +16,7 @@ async function connectToDatabase(): Promise<Db> {
 export default defineEventHandler(async (event) => {
   try {
     const db = await connectToDatabase();
-    const collection = db.collection("figures");
+    const collection = db.collection(process.env.COLLECTION!);
 
     const id = event.context.params?.id;
     if (!id) {

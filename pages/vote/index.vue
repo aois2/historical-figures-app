@@ -29,8 +29,11 @@ const figureNames = computed(() => {
 });
 
 const onSubmit = async () => {
-  if (!selectedFigure.value) return;
+  if (!selectedFigure.value) {
+    return;
+  }
 
+  // Find the figure's data based on the selected name
   const selectedFigureData = figuresData.value.find(
     (figure) => figure.name_jp === selectedFigure.value
   );
@@ -40,20 +43,15 @@ const onSubmit = async () => {
     return;
   }
 
-  const { data, error } = await useFetch(
-    `/api/figures/${selectedFigureData._id}`,
-    {
+  try {
+    const response = await $fetch(`/api/vote`, {
       method: "PUT",
-    }
-  );
-
-  if (error) {
-    console.error("Failed to vote:", error);
-  } else {
-    console.log(
-      "Vote successfully cast for figure:",
-      selectedFigureData.name_jp
-    );
+      params: {
+        id: selectedFigureData._id,
+      },
+    });
+  } catch (error) {
+    console.error("An error occurred while voting:", error);
   }
 };
 </script>
