@@ -13,7 +13,7 @@ export type Figure = {
   region_jp: string;
   image_url: string;
   votes: number;
-  mbti_votes: MBTIs[];
+  mbti_votes: MBTIs;
 };
 
 type MBTIs = {

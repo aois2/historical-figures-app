@@ -1,3 +1,4 @@
+// /api/mbti-categories.js
 import { MongoClient, Db } from "mongodb";
 
 let client: MongoClient;
@@ -14,9 +15,8 @@ async function connectToDatabase(): Promise<Db> {
 
 export default defineEventHandler(async (event) => {
   const db = await connectToDatabase();
-  const collection = db.collection(process.env.FIGURES_COLLECTION!);
+  const collection = db.collection(process.env.MBTI_CATEGORIES_COLLECTION!);
 
-  const figures = await collection.find({}).toArray();
-
-  return figures;
+  const data = await collection.find({}).toArray();
+  return data;
 });

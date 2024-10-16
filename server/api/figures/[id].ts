@@ -5,8 +5,7 @@ let db: Db | null = null;
 
 async function connectToDatabase(): Promise<Db> {
   if (!client) {
-    const mongoUri = process.env.MONGODB_URI as string;
-    client = new MongoClient(mongoUri);
+    client = new MongoClient(process.env.MONGODB_URI as string);
     await client.connect();
     db = client.db(process.env.DB_NAME);
   }
@@ -16,7 +15,7 @@ async function connectToDatabase(): Promise<Db> {
 export default defineEventHandler(async (event) => {
   try {
     const db = await connectToDatabase();
-    const collection = db.collection(process.env.COLLECTION!);
+    const collection = db.collection(process.env.FIGURES_COLLECTION!);
 
     const id = event.context.params?.id;
     if (!id) {
