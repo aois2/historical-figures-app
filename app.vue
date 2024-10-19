@@ -9,5 +9,12 @@
   </v-app>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
+
+<style>
+li {
+  list-style-type: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+</style>

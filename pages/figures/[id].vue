@@ -1,7 +1,9 @@
 <template>
   <v-container max-width="800">
-    <div v-if="error">An error occurred: {{ error.message }}</div>
-    <div v-else>
+    <div v-if="error" class="error-message pa-2 red--text">
+      {{ error.message }}
+    </div>
+    <div>
       <div :class="['text-h3', 'pa-2']">{{ figure.name_jp }}</div>
       <div :class="['text-h5', 'pa-2']">MBTI: {{ figure.mbti_type }}</div>
       <v-img :src="figure.image_url" aspect-ratio="2.0" />
@@ -11,34 +13,52 @@
       </div>
 
       <div :class="['text-body-1', 'pa-2']">
-        <div>MBTI投票数:</div>
-        <ul>
-          <li v-for="(count, mbtiType) in figure.mbti_votes" :key="mbtiType">
-            <span>{{ mbtiType }}: {{ count }}</span>
-          </li>
-        </ul>
+        <div>MBTI投票数</div>
+        <v-row>
+          <v-col
+            v-for="category in mbtiCategories"
+            :key="category.category"
+            cols="12"
+            md="6"
+            lg="3"
+          >
+            <ul>
+              <li v-for="type in category.types" :key="type.mbti">
+                <span
+                  >{{ type.mbti }}:
+                  {{ figure.mbti_votes[type.mbti] || 0 }}</span
+                >
+              </li>
+            </ul>
+          </v-col>
+        </v-row>
       </div>
 
-      <v-btn @click="openDialog" color="secondary" class="ml-2">
-        投票する
-      </v-btn>
+      <div v-if="apiError" class="error-message pa-2 red--text">
+        {{ apiError }}
+      </div>
 
       <v-dialog v-model="dialog" max-width="600">
-        <v-card>
-          <v-card title="MBTI 投票">
+        <template v-slot:activator="{ props: activatorProps }">
+          <v-btn
+            color="primary"
+            class="ml-2 my-3"
+            variant="tonal"
+            v-bind="activatorProps"
+            >{{ `${figure.name_jp}のMBTIを投票する` }}</v-btn
+          >
+        </template>
+
+        <v-card title="MBTI 投票">
+          <v-form validate-on="submit lazy" @submit.prevent="submit">
             <v-card-text>
-              <v-radio-group v-model="selectedMbtiType" column>
+              <v-radio-group v-model="selectedMbti" column>
                 <v-row>
                   <v-col
                     v-for="category in mbtiCategories"
                     :key="category.category"
-                    cols="12"
-                    md="6"
-                    lg="3"
+                    cols="3"
                   >
-                    <div class="font-weight-bold mb-2">
-                      {{ category.category }}
-                    </div>
                     <v-radio
                       v-for="type in category.types"
                       :key="type.mbti"
@@ -49,13 +69,21 @@
                 </v-row>
               </v-radio-group>
             </v-card-text>
+
             <v-card-actions>
-              <v-btn color="primary" variant="elevated" @click="submitMbtiVote"
+              <v-spacer></v-spacer>
+
+              <v-btn variant="plain" @click="dialog = false">キャンセル</v-btn>
+              <v-btn
+                :loading="loading"
+                :disabled="!selectedMbti"
+                color="primary"
+                variant="flat"
+                type="submit"
                 >送信</v-btn
               >
-              <v-btn color="secondary" @click="handleCancel">キャンセル</v-btn>
             </v-card-actions>
-          </v-card>
+          </v-form>
         </v-card>
       </v-dialog>
     </div>
@@ -63,59 +91,57 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useFetch, useRoute } from "#imports";
 import type { Figure } from "~/types";
 
 const route = useRoute();
-const { data: figure, error } = await useFetch<Figure>(
-  `/api/figures/${route.params.id}`
-);
+const {
+  data: figure,
+  error,
+  refresh,
+} = await useFetch<Figure>(`/api/figures/${route.params.id}`);
 
-// Dialog state
+const loading = ref(false);
 const dialog = ref(false);
-const selectedMbtiType = ref<string | null>(null);
 const mbtiCategories = ref([]);
+const selectedMbti = ref("");
+const apiError = ref<string | null>(null);
 
 const fetchMbtiCategories = async () => {
-  const { data } = await useFetch("/api/mbti-categories");
-  mbtiCategories.value = data.value;
+  const categoriesData = await $fetch("/api/mbti-categories");
+  mbtiCategories.value = categoriesData;
 };
 
-const openDialog = () => {
-  dialog.value = true;
-};
+const submit = async () => {
+  loading.value = true;
+  apiError.value = null;
 
-const handleCancel = () => {
-  selectedMbtiType.value = null; // Reset the selected MBTI type
-  dialog.value = false;
-};
-
-const submitMbtiVote = async () => {
-  if (!selectedMbtiType.value) {
-    console.error("No MBTI type selected");
-    return;
-  }
-
-  const { error: mbtiVoteError } = await useFetch(
-    `/api/vote/${route.params.id}?mbtiType=${selectedMbtiType.value}`,
-    {
+  try {
+    await $fetch(`/api/vote`, {
       method: "PUT",
-    }
-  );
+      params: {
+        id: route.params.id,
+        mbtiType: selectedMbti.value,
+      },
+    });
 
-  if (!mbtiVoteError && figure.value?.mbti_votes) {
-    // Increment the vote count for the specified MBTI type
-    figure.value.mbti_votes[selectedMbtiType.value] += 1;
-    dialog.value = false; // Close the dialog after successful vote
-    selectedMbtiType.value = null; // Reset the selected MBTI type
-  } else {
-    console.error(
-      `Failed to vote for MBTI type ${selectedMbtiType.value}:`,
-      mbtiVoteError
-    );
+    await refresh();
+
+    selectedMbti.value = "";
+    dialog.value = false;
+  } catch (error) {
+    apiError.value = error.message;
+  } finally {
+    loading.value = false;
   }
 };
+
+watch(dialog, (newValue) => {
+  if (!newValue) {
+    selectedMbti.value = "";
+  }
+});
 
 onMounted(() => {
   fetchMbtiCategories();

@@ -1,7 +1,10 @@
 <template>
   <v-container>
     <h1>歴史上の人物</h1>
-    <NuxtLink :to="'/vote'">投票する</NuxtLink>
+    <div v-if="error" class="error-message pa-2 red--text">
+      {{ error.message }}
+    </div>
+    <NuxtLink :to="'/vote'">お気に入りを投票する</NuxtLink>
     <v-row>
       <v-col
         v-for="(figures, mbti) in categorizedFigures"
@@ -33,7 +36,6 @@ if (data.value) {
   setFiguresData(data.value);
 }
 
-// Categorizing figures by MBTI type
 const categorizedFigures = computed(() => {
   return figuresData.value.reduce(
     (acc, figure) => {
@@ -47,7 +49,3 @@ const categorizedFigures = computed(() => {
   );
 });
 </script>
-
-<style scoped>
-/* Add any styles you want here */
-</style>
