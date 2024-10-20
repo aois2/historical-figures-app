@@ -45,7 +45,7 @@ const categorizedFigures = computed(() => {
       acc[figure.mbti_type].push(figure);
       return acc;
     },
-    {} as Record<string, Figure[]>
+    {} as Record<string, Figure[]>,
   );
 });
 </script>

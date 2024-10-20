@@ -45,7 +45,7 @@ const onSubmit = async () => {
 
   // Find the figure's data based on the selected name
   const selectedFigureData = figuresData.value.find(
-    (figure) => figure.name_jp === selectedFigure.value
+    (figure) => figure.name_jp === selectedFigure.value,
   );
 
   if (!selectedFigureData || !selectedFigureData._id) {
